@@ -124,7 +124,7 @@ class Post(models.Model):
 
 class Comments(models.Model):
     text = models.TextField('Текст поздравления')
-    add_comment = models.ForeignKey(
+    post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
         related_name='comments',
