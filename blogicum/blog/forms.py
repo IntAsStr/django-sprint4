@@ -34,7 +34,7 @@ class PostCreateForm(forms.ModelForm):
             'category',
             'location',
             'is_published'
-            )
+        )
         widgets = {
             'pub_date': forms.DateInput(
                 attrs={'type': 'date'},

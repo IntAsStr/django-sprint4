@@ -4,8 +4,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.forms import UserCreationForm
 from django.views.generic.edit import CreateView
-from django.contrib.auth.views import LogoutView
-from django.views.decorators.http import require_POST
 
 from blog.views import logout_user
 

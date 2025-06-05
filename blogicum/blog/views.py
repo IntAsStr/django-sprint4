@@ -30,8 +30,7 @@ class MainPage(ListView):
 
     def get_queryset(self):
         queryset = Post.objects.select_related('author', 'category').filter(
-            Q(is_published=True) |
-            Q(author=self.request.user)
+            Q(is_published=True) | Q(author=self.request.user)
             if self.request.user.is_authenticated else Q(is_published=True)
         ).filter(
             category__is_published=True,
@@ -89,8 +88,7 @@ class CategoryPost(ListView):
         # Условия видимости
         if self.request.user.is_authenticated:
             queryset = queryset.filter(
-                Q(is_published=True) |
-                Q(author=self.request.user)
+                Q(is_published=True) | Q(author=self.request.user)
             )
         else:
             queryset = queryset.filter(is_published=True)
@@ -168,7 +166,7 @@ class EditProfile(LoginRequiredMixin, OnlyAuthorMixin, UpdateView):
         # Перенаправляем на профиль текущего пользователя
         return reverse(
             'blog:profile', kwargs={'username': self.request.user.username}
-            )
+        )
 
     def test_func(self):
         return self.request.user == self.get_object()
