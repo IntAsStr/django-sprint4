@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
 from django.utils import timezone
 
 User = get_user_model()
@@ -90,14 +90,14 @@ class Post(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name='Местоположение',
-        related_name='location_post'
+        related_name='posts'
     )
     category = models.ForeignKey(
         Category,
         null=True,
         on_delete=models.SET_NULL,
         verbose_name='Категория',
-        related_name='category_post',
+        related_name='posts',
     )
     is_published = models.BooleanField(
         default=True,
@@ -122,17 +122,27 @@ class Post(models.Model):
         return self.title
 
 
-class Comments(models.Model):
+class Comment(models.Model):
     text = models.TextField('Текст поздравления')
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
         related_name='comments',
+        verbose_name='Пост',
         null=True,  # Разрешить NULL
         blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='coment_author'
+    )
 
     class Meta:
         ordering = ('created_at',)
+        verbose_name = 'Коментарий'
+        verbose_name_plural = 'Коментарии'
+
+    def __str__(self):
+        return self.title

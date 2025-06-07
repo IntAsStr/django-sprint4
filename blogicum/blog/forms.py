@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm
-from .models import Post, Comments
+
+from .models import Post, Comment
 
 User = get_user_model()
 
@@ -36,16 +37,19 @@ class PostCreateForm(forms.ModelForm):
             'is_published'
         )
         widgets = {
-            'pub_date': forms.DateInput(
-                attrs={'type': 'date'},
-                format='%Y-%m-%d'
+            'pub_date': forms.DateTimeInput(
+                attrs={
+                    'type': 'datetime-local',
+                    'class': 'form-control'
+                },
+                format='%Y-%m-%dT%H:%M'
             )
         }
 
 
 class CommentsForm(forms.ModelForm):
     class Meta:
-        model = Comments
+        model = Comment
         fields = ('text',)
         widgets = {
             'text': forms.Textarea(attrs={

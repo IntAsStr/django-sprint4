@@ -1,19 +1,19 @@
+from django.contrib.auth import get_user_model, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.paginator import Paginator
+from django.db.models import Count, Q
+from django.http import Http404, HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView
 )
-from django.http import HttpResponseForbidden, Http404
-from django.db.models import Count, Q
-from django.urls import reverse_lazy, reverse
-from django.core.paginator import Paginator
-from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
-from django.contrib.auth import get_user_model
 
-from .models import Category, Post, Comments
-from .forms import EditProfileForm, PostCreateForm, CommentsForm
+# Локальные импорты
+from .forms import CommentsForm, EditProfileForm, PostCreateForm
+from .models import Category, Comment, Post
 
 User = get_user_model()
 
@@ -44,9 +44,10 @@ class MainPage(ListView):
 
 def post_detail(request, post_id):
     try:
-        post = Post.objects.select_related(
-            'author',
-            'category').get(id=post_id)
+        post = get_object_or_404(
+            Post.objects.select_related('author', 'category', 'location'),
+            id=post_id
+        )
 
         if not post.is_published and post.author != request.user:
             raise Http404("Пост не найден или снят с публикации")
@@ -122,7 +123,7 @@ class UserProfileView(DetailView):
         ).order_by('-pub_date')
 
         paginator = Paginator(posts_list, self.paginate_by)
-        page_number = self.request.GET.get('page')
+        page_number = self.request.GET.get('page', 1)
         page_obj = paginator.get_page(page_number)
 
         context.update({
@@ -136,8 +137,8 @@ class UserProfileView(DetailView):
 class OnlyAuthorMixin(UserPassesTestMixin):
 
     def test_func(self):
-        object = self.get_object()
-        return object.author == self.request.user
+        objective = self.get_object()
+        return objective.author == self.request.user
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -213,7 +214,7 @@ class DeletePost(LoginRequiredMixin, OnlyAuthorMixin, DeleteView):
 @login_required
 def add_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    form = CommentsForm(request.POST)
+    form = CommentsForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
@@ -223,7 +224,7 @@ def add_comment(request, pk):
 
 
 class EditCommentView(LoginRequiredMixin, OnlyAuthorMixin, UpdateView):
-    model = Comments
+    model = Comment
     form_class = CommentsForm
     template_name = 'blog/comment.html'
     pk_url_kwarg = 'pk'
@@ -247,12 +248,13 @@ class EditCommentView(LoginRequiredMixin, OnlyAuthorMixin, UpdateView):
 
 
 class DeleteCommentView(LoginRequiredMixin, OnlyAuthorMixin, DeleteView):
-    model = Comments
+    model = Comment
     template_name = 'blog/comment.html'
 
     def get_success_url(self):
         return reverse_lazy(
-            'blog:post_detail', kwargs={'post_id': self.object.post.id}
+            'blog:post_detail',
+            kwargs={'post_id': self.kwargs['post_id']}
         )
 
 
