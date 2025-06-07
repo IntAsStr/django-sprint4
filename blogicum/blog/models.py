@@ -77,7 +77,11 @@ class Post(models.Model):
             'Если установить дату и время в будущем — '
             'можно делать отложенные публикации.'
         ),
-        default=timezone.now
+        # default=timezone.now
+        # я не понимаю что тут использовать при
+        # auto_now или auto_now_add не позволяют делать отложенные публикации
+        # и как с вами связатся я не знаю в чатиках писал не отвечаете
+        editable=True
     )
     author = models.ForeignKey(
         User,
@@ -123,20 +127,24 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
-    text = models.TextField('Текст поздравления')
+    text = models.TextField('Коментарий')
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
         related_name='comments',
         verbose_name='Пост',
-        null=True,  # Разрешить NULL
+        null=False,
         blank=True
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Добавлено'
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='coment_author'
+        related_name='coment_author',
+        verbose_name='Автор'
     )
 
     class Meta:
@@ -145,4 +153,4 @@ class Comment(models.Model):
         verbose_name_plural = 'Коментарии'
 
     def __str__(self):
-        return self.title
+        return self.text
