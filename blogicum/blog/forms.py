@@ -50,13 +50,16 @@ class PostCreateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not self.instance.pk:  # Только для нового поста
-            self.initial['pub_date'] = timezone.now().strftime('%Y-%m-%dT%H:%M')
+            self.initial['pub_date'] = timezone.now().strftime(
+                '%Y-%m-%dT%H:%M'
+            )
 
     def clean_pub_date(self):
         pub_date = self.cleaned_data.get('pub_date')
         if not pub_date:
             raise forms.ValidationError("Дата публикации обязательна")
         return pub_date
+
 
 class CommentsForm(forms.ModelForm):
     class Meta:
