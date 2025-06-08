@@ -43,17 +43,13 @@ class MainPage(ListView):
 
 
 def post_detail(request, post_id):
-    try:
-        post = get_object_or_404(
-            Post.objects.select_related('author', 'category', 'location'),
-            id=post_id
-        )
+    post = get_object_or_404(
+        Post.objects.select_related('author', 'category', 'location'),
+        id=post_id
+    )
 
-        if not post.is_published and post.author != request.user:
-            raise Http404("Пост не найден или снят с публикации")
-
-    except Post.DoesNotExist:
-        raise Http404("Пост не найден")
+    if not post.is_published and post.author != request.user:
+        raise Http404("Пост не найден или снят с публикации")
 
     comments = post.comments.select_related('author').order_by('created_at')
 
